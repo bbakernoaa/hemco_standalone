@@ -1,0 +1,18 @@
+This folder contains example data for a HEMCO standalone run. 
+Total CO emissions are calculated from the EDGAR database (Source: EC-JRC/PBL. EDGAR version 4.2. http://edgar.jrc.ec.europa.eu/, 2011) for January 1, 2008 and on an output grid at a resolution of 4x5 degrees.
+
+This example is automatically executed during installation of HEMCO. 
+You can also run it by calling the hemco_standalone executable 'hemco_standalone.x' from within this directory:
+./hemco_standalone.x "HEMCO_sa_Config.rc"
+
+If successfully executed, the HEMCO logfile (HEMCO_sa.log) and diagnostics file (HEMCO_sa.diagnostics.20000101000.nc) are written to the output folder.
+
+This folder should contain:
+- HEMCO_sa_Config.rc             : HEMCO configuration file.
+- HEMCO_sa_Grid.rc               : Emission grid definition.
+- HEMCO_sa_Spec.rc               : Species definition.
+- HEMCO_sa_Time.rc               : Time and date specifications.
+- data/v42_CO_2008_TOT.0.1x0.1.nc: CO input data from the EDGAR v4.2. database.
+- output/                        : Folder containing all output data.
+
+Christoph Keller, 21 Jul 2014.
