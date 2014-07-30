@@ -45,13 +45,14 @@ MODULE HCO_Clock_Mod
   PUBLIC :: HcoClock_First
   PUBLIC :: HcoClock_GetMinResetFlag
   PUBLIC :: HcoClock_CalcDOY
+  PUBLIC :: HcoClock_Increase
 !
 ! !REMARKS:
 !  The current local time implementation assumes a regular grid,
 !  i.e. local time does not change with latitude
 !
 ! !REVISION HISTORY:
-!  29 Dec 2012 - C. Keller - Initialization
+!  29 Dec 2012 - C. Keller   - Initialization
 !  12 Jun 2014 - R. Yantosca - Cosmetic changes in ProTeX headers
 !  12 Jun 2014 - R. Yantosca - Now use F90 freeform indentation
 !EOP
@@ -105,7 +106,8 @@ MODULE HCO_Clock_Mod
 
      ! total number of emission time steps 
      INTEGER            :: nSteps
-  ENDTYPE HCO_Clock
+
+  END TYPE HCO_Clock
 !
 ! !LOCAL VARIABLES:
 !
@@ -280,8 +282,9 @@ CONTAINS
 !
 ! !LOCAL ARGUMENTS:
 !
-    REAL(sp) :: UTC
-    INTEGER  :: DOY
+    REAL(sp)            :: UTC
+    INTEGER             :: DOY
+    CHARACTER(LEN=255)  :: MSG
 
     !======================================================================
     ! HcoClock_Set begins here!
@@ -352,9 +355,25 @@ CONTAINS
     CurrMinResetFlag = HcoClock_SetMinResetFlag()
 
     ! ----------------------------------------------------------------
-    ! Leave w/ success
+    ! Verbose mode
+    ! ----------------------------------------------------------------
+    IF ( am_I_Root .AND. HCO_VERBOSE_CHECK() ) THEN
+       WRITE(MSG,100) HcoClock%ThisYear, HcoClock%ThisMonth, &
+                      HcoClock%ThisDay,  HcoClock%ThisHour,  &
+                      HcoClock%ThisMin,  HcoClock%ThisSec
+       CALL HCO_MSG(MSG,SEP1=' ')
+       WRITE(MSG,110) HcoClock%ThisWD 
+       CALL HCO_MSG(MSG,SEP2=' ')
+    ENDIF
+
+    ! ----------------------------------------------------------------
+    ! Update / reset counters
     ! ----------------------------------------------------------------
     HcoClock%nSteps = HcoClock%nSteps + 1
+
+100 FORMAT( 'Set HEMCO clock to ', i4,'-',i2.2,'-',i2.2,' ', &
+            i2.2,':',i2.2,':',i2.2 )
+110 FORMAT( 'The weekday is (0=Sun,...,6=Sat): ', i1.1 )
 
   END SUBROUTINE HcoClock_Set
 !EOC
@@ -905,7 +924,7 @@ CONTAINS
 !------------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Set_LocaTtime 
+! !IROUTINE: Set_LocalTime 
 !
 ! !DESCRIPTION: Subroutine Set\_LocalTime sets the local time vectors in 
 ! the HEMCO clock object. 
@@ -965,7 +984,7 @@ CONTAINS
        ThisLocMonth = HcoClock%ThisMonth
 
        ! Case 1: Local time is one day behind UTC.  
-       IF ( DECloc < 0.0 ) THEN
+       IF ( DECloc < 0.0_sp ) THEN
           ThisLocHour = DECloc + 24_sp
 
           ! Adjust local weekday
@@ -986,7 +1005,7 @@ CONTAINS
           ENDIF
 
        ! Case 2: Local time is one day ahead UTC.
-       ELSE IF ( DECloc >= 24.0 ) THEN
+       ELSE IF ( DECloc >= 24.0_sp ) THEN
           ThisLocHour = DECloc - 24_sp
 
           ! Adjust local weekday 
@@ -1017,7 +1036,7 @@ CONTAINS
  
        ! Error trap: prevent local time from being 24
        ! (can occur due to rounding errors)
-       IF ( ThisLocHour == 24.0 ) THEN
+       IF ( ThisLocHour == 24.0_sp ) THEN
           ThisLocHour = 0.0_sp
        ENDIF
  
@@ -1087,6 +1106,80 @@ CONTAINS
     DOY = DOY + DD
 
   END FUNCTION HcoClock_CalcDOY
+!EOC
+!------------------------------------------------------------------------------
+!                  Harvard-NASA Emissions Component (HEMCO)                   !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: HcoClock_Increase 
+!
+! !DESCRIPTION: Subroutine HcoClock\_Increase increases the HEMCO clock by the
+! specified time. 
+!\\
+!\\
+! !INTERFACE:
+!
+  SUBROUTINE HcoClock_Increase ( am_I_Root, HcoState, TimeStep, RC ) 
+!
+! !USES:
+!
+    USE HCO_STATE_MOD, ONLY : HCO_State
+!
+! !INPUT PARAMETERS: 
+!
+    LOGICAL,         INTENT(IN   ) :: am_I_Root ! Root CPU 
+    TYPE(HCO_State), POINTER       :: HcoState  ! Hemco state
+    REAL(sp),        INTENT(IN   ) :: TimeStep  ! Time step increase [s]
+!
+! !INPUT/OUTPUT PARAMETERS:
+!
+    INTEGER,         INTENT(INOUT) :: RC        ! Success or failure?
+!
+! !REVISION HISTORY: 
+!  29 Jul 2014 - C. Keller - Initial version 
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+!
+    INTEGER             :: YYYYMMDD, HHMMSS
+    INTEGER             :: Yr, Mt, Dy, Hr, Mn, Sc
+    REAL(dp)            :: DAY, UTC, JD
+
+    !-----------------------------------
+    ! HcoClock_Increase begins here! 
+    !-----------------------------------
+
+    ! Get current date as Julian day.
+    UTC = ( REAL( HcoClock%ThisHour, dp )             ) + &
+          ( REAL( HcoClock%ThisMin , dp ) / 60.0_dp   ) + &
+          ( REAL( HcoClock%ThisSec , dp ) / 3600.0_dp )
+    DAY = REAL(HcoClock%ThisDay, dp) + UTC
+    JD  = JULDAY( HcoClock%ThisYear, HcoClock%ThisMonth, DAY )
+
+    ! Add time step
+    JD = JD + ( REAL(TimeStep,dp) / 86400.0_dp )
+
+    ! Translate back into dates.
+    CALL CALDATE( JD, YYYYMMDD, HHMMSS )
+    Yr = FLOOR ( MOD( YYYYMMDD, 100000000) / 1.0e4_dp )
+    Mt = FLOOR ( MOD( YYYYMMDD, 10000    ) / 1.0e2_dp )
+    Dy = FLOOR ( MOD( YYYYMMDD, 100      ) / 1.0e0_dp )
+
+    Hr = FLOOR ( MOD(   HHMMSS, 1000000  ) / 1.0e4_dp )
+    Mn = FLOOR ( MOD(   HHMMSS, 10000    ) / 1.0e2_dp )
+    Sc = FLOOR ( MOD(   HHMMSS, 100      ) / 1.0e0_dp )
+
+    ! Update HEMCO clock to new values
+    CALL HcoClock_Set ( am_I_Root, HcoState, Yr, Mt, Dy, Hr, Mn, Sc, RC=RC )
+    IF ( RC /= HCO_SUCCESS ) RETURN
+
+    ! Return w/ success
+    RC = HCO_SUCCESS
+
+  END SUBROUTINE HcoClock_Increase
 !EOC
 END MODULE HCO_CLOCK_MOD
 !EOM

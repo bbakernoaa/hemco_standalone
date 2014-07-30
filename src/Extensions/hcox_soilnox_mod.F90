@@ -17,6 +17,7 @@ MODULE HCOX_SoilNOx_Mod
 ! !USES:
 !
   USE HCO_ERROR_Mod
+  USE HCO_CHARTOOLS_MOD
   USE HCO_DIAGN_Mod
   USE HCOX_State_Mod,     ONLY : Ext_State
   USE HCO_STATE_Mod,      ONLY : HCO_State
@@ -99,6 +100,8 @@ MODULE HCOX_SoilNOx_Mod
 !                                  (comments) 
 !  04 Nov 2013 - C. Keller       - Moved all soil NOx routines into one
 !                                  module. Now a HEMCO extension.
+!  28 Jul 2014 - C. Keller       - Now allow DRYCOEFF to be read through 
+!                                  configuration file (as setting)
 !
 !EOP
 !------------------------------------------------------------------------------
@@ -143,6 +146,11 @@ MODULE HCOX_SoilNOx_Mod
   ! Fraction of arid and non-arid land
   REAL(hp), POINTER             :: CLIMARID         (:,:  ) => NULL()
   REAL(hp), POINTER             :: CLIMNARID        (:,:  ) => NULL()
+
+  ! DRYCOEFF (if read from settings in configuration file)
+  REAL(dp), ALLOCATABLE, TARGET :: DRYCOEFF(:)
+  ! Max. # of allowed drycoeff vars
+  INTEGER,  PARAMETER           :: MaxDryCoeff = 50 
 !
 ! !DEFINED PARAMETERS:
 !
@@ -246,6 +254,7 @@ CONTAINS
 !
     USE HCO_FLuxArr_Mod,    ONLY : HCO_EmisAdd
     USE HCO_EmisList_Mod,   ONLY : EmisList_GetDataArr
+    USE HCO_ExtList_Mod,    ONLY : GetExtOpt
 !
 ! !INPUT PARAMETERS:
 !
@@ -266,17 +275,18 @@ CONTAINS
 !
 ! !LOCAL VARIABLES:
 !
-    LOGICAL                :: aIR
-    INTEGER                :: I, J
+    INTEGER                :: I, J, N
     REAL(hp), TARGET       :: FLUX_2D(HcoState%NX,HcoState%NY)
     REAL*8                 :: FERTDIAG, DEP_FERT, SOILFRT
     REAL*8, PARAMETER      :: SEC_PER_YEAR = 3.1536d7
     REAL*4                 :: TSEMIS
     REAL*8                 :: UNITCONV, IJFLUX
+    REAL(dp), ALLOCATABLE  :: VecDp(:)
     REAL(hp), POINTER      :: TmpArr(:,:) => NULL()
     REAL(hp), POINTER      :: Arr2D (:,:) => NULL()
     LOGICAL, SAVE          :: FIRST = .TRUE.
-    CHARACTER(LEN=255)     :: MSG
+    LOGICAL                :: aIR, FOUND
+    CHARACTER(LEN=255)     :: MSG, DMY
 
     !=================================================================
     ! HCOX_SoilNOx_RUN begins here!
@@ -295,70 +305,70 @@ CONTAINS
     ! Conversion factor from ng N to kg NO
     UNITCONV = 1.0d-12 / 14.0d0 * HcoState%Spc(IDTNO)%EmMW_g
 
-    ! Get all arrays needed for SoilNOx calculation
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK1',  LANDTYPE(1)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK2',  LANDTYPE(2)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK3',  LANDTYPE(3)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK4',  LANDTYPE(4)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK5',  LANDTYPE(5)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK6',  LANDTYPE(6)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK7',  LANDTYPE(7)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK8',  LANDTYPE(8)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK9',  LANDTYPE(9)%VAL,  RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK10', LANDTYPE(10)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK11', LANDTYPE(11)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK12', LANDTYPE(12)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK13', LANDTYPE(13)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK14', LANDTYPE(14)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK15', LANDTYPE(15)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK16', LANDTYPE(16)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK17', LANDTYPE(17)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK18', LANDTYPE(18)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK19', LANDTYPE(19)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK20', LANDTYPE(20)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK21', LANDTYPE(21)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK22', LANDTYPE(22)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK23', LANDTYPE(23)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK24', LANDTYPE(24)%VAL, RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_FERT',    SOILFERT,         RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_ARID',    CLIMARID,         RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    CALL EmisList_GetDataArr ( aIR, 'SOILNOX_NONARID', CLIMNARID,        RC )
-    IF ( RC /= HCO_SUCCESS ) RETURN
-    
-    ! NOTE:
-    ! On first call, also initialize variables obtained from the 
-    ! restart file specified in the configuration file. Note that
-    ! this may lead to errorenous results if the time slices in the
-    ! restart file don't match the simulation start date!!
-    ! In future, we may want to include these values into the GEOS-Chem
-    ! restart file! 
+    !-----------------------------------------------------------------
+    ! On first call, set pointers to all arrays needed by SoilNOx
+    !-----------------------------------------------------------------
+
     IF ( FIRST ) THEN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK1',  LANDTYPE(1)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK2',  LANDTYPE(2)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK3',  LANDTYPE(3)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK4',  LANDTYPE(4)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK5',  LANDTYPE(5)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK6',  LANDTYPE(6)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK7',  LANDTYPE(7)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK8',  LANDTYPE(8)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK9',  LANDTYPE(9)%VAL,  RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK10', LANDTYPE(10)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK11', LANDTYPE(11)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK12', LANDTYPE(12)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK13', LANDTYPE(13)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK14', LANDTYPE(14)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK15', LANDTYPE(15)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK16', LANDTYPE(16)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK17', LANDTYPE(17)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK18', LANDTYPE(18)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK19', LANDTYPE(19)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK20', LANDTYPE(20)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK21', LANDTYPE(21)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK22', LANDTYPE(22)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK23', LANDTYPE(23)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_LANDK24', LANDTYPE(24)%VAL, RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_FERT',    SOILFERT,         RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_ARID',    CLIMARID,         RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+       CALL EmisList_GetDataArr ( aIR, 'SOILNOX_NONARID', CLIMNARID,        RC )
+       IF ( RC /= HCO_SUCCESS ) RETURN
+    
+       !---------------------------------------------------------------
+       ! Also initialize variables obtained from the restart file specified 
+       ! in the configuration file. 
+       !---------------------------------------------------------------
 
        ! DEP_RESERVOIR. HEMCO converts this to kgNO/m2. Convert here
        ! back to ngN/m2.
@@ -390,13 +400,31 @@ CONTAINS
             'I hope the correct time stamp is used!'
        CALL HCO_WARNING( MSG, RC )
 
+       ! Check if ExtState variables DRYCOEFF is defined. Otherwise, try to
+       ! read it from settings.
+       IF ( .NOT. ASSOCIATED(ExtState%DRYCOEFF) ) THEN
+          CALL GetExtOpt ( ExtNr, 'DRYCOEFF', OptValChar=DMY, FOUND=FOUND, RC=RC )
+          IF ( .NOT. FOUND ) THEN
+             CALL HCO_ERROR( 'DRYCOEFF not defined', RC ) 
+             RETURN
+          ENDIF
+          ALLOCATE(VecDp(MaxDryCoeff))
+          CALL HCO_CharSplit( DMY, HCO_SEP(), HCO_WCD(), VecDp, N, RC )
+          IF ( RC /= HCO_SUCCESS ) RETURN
+          ALLOCATE(DRYCOEFF(N))
+          DRYCOEFF(1:N) = VecDp(1:N)
+          ExtState%DRYCOEFF => DRYCOEFF
+          DEALLOCATE(VecDp)
+       ENDIF
+
        FIRST = .FALSE.
     ENDIF
 
     ! Now need to call GET_CANOPY_NOX to break ugly dependency between
     ! drydep and soil NOx emissions. (bmy, 6/22/09) 
     ! Now a function of the new MODIS/Koppen biome map (J.D. Maasakkers)
-    CALL GET_CANOPY_NOX( aIR, HcoState, ExtState )
+    CALL GET_CANOPY_NOX( aIR, HcoState, ExtState, RC )
+    IF ( RC /= HCO_SUCCESS ) RETURN
 
     ! Init
     FLUX_2D = 0d0 
@@ -467,14 +495,6 @@ CONTAINS
        IF ( RC /= HCO_SUCCESS ) RETURN 
        Arr2D => NULL() 
     ENDIF
-
-    ! Cleanup 
-    DO I = 1, NBIOM_HSN
-       LANDTYPE(I)%VAL => NULL() 
-    ENDDO
-    SOILFERT  => NULL()
-    CLIMARID  => NULL()
-    CLIMNARID => NULL()
 
     ! Leave w/ success
     CALL HCO_LEAVE ( RC ) 
@@ -771,21 +791,26 @@ CONTAINS
     !=================================================================
 
     ! Deallocate arrays
-    IF ( ALLOCATED(DRYPERIOD_HSN) ) DEALLOCATE ( DRYPERIOD_HSN )
-    IF ( ALLOCATED(PFACTOR_HSN)   ) DEALLOCATE ( PFACTOR_HSN )
-    IF ( ALLOCATED(GWET_PREV_HSN) ) DEALLOCATE ( GWET_PREV_HSN )
-    IF ( ALLOCATED(INST_SOIL_HSN) ) DEALLOCATE ( INST_SOIL_HSN )
-    IF ( ALLOCATED(INST_FERT_HSN) ) DEALLOCATE ( INST_FERT_HSN )
-    IF ( ALLOCATED(CANOPYNOX) ) DEALLOCATE ( CANOPYNOX )
+    IF ( ALLOCATED(DRYPERIOD_HSN    ) ) DEALLOCATE ( DRYPERIOD_HSN     )
+    IF ( ALLOCATED(PFACTOR_HSN      ) ) DEALLOCATE ( PFACTOR_HSN       )
+    IF ( ALLOCATED(GWET_PREV_HSN    ) ) DEALLOCATE ( GWET_PREV_HSN     )
+    IF ( ALLOCATED(INST_SOIL_HSN    ) ) DEALLOCATE ( INST_SOIL_HSN     )
+    IF ( ALLOCATED(INST_FERT_HSN    ) ) DEALLOCATE ( INST_FERT_HSN     )
+    IF ( ALLOCATED(CANOPYNOX        ) ) DEALLOCATE ( CANOPYNOX         )
     IF ( ALLOCATED(DEP_RESERVOIR_HSN) ) DEALLOCATE ( DEP_RESERVOIR_HSN )
+    IF ( ALLOCATED(DRYCOEFF         ) ) DEALLOCATE ( DRYCOEFF          )
 
     ! Deallocate LANDTYPE vector 
     IF ( ASSOCIATED(LANDTYPE) ) THEN
        DO I = 1,NBIOM_HSN
-          LANDTYPE(NBIOM_HSN)%VAL => NULL()
+          LANDTYPE(I)%VAL => NULL()
        ENDDO
        DEALLOCATE ( LANDTYPE )
     ENDIF
+
+    SOILFERT  => NULL()
+    CLIMARID  => NULL()
+    CLIMNARID => NULL()
 
     ! Free pointers 
     CLIMARID  => NULL()
@@ -994,7 +1019,7 @@ CONTAINS
 !\\
 ! !INTERFACE:
 !
-  SUBROUTINE Get_Canopy_NOx( am_I_Root, HcoState, ExtState )
+  SUBROUTINE Get_Canopy_NOx( am_I_Root, HcoState, ExtState, RC )
 !
 ! !USES:
 !
@@ -1005,6 +1030,7 @@ CONTAINS
     LOGICAL,         INTENT(IN   )  :: am_I_Root
     TYPE(HCO_State), POINTER        :: HcoState   ! Output obj
     TYPE(Ext_State), POINTER        :: ExtState    ! Module options
+    INTEGER,         INTENT(INOUT)  :: RC
 !
 ! !REMARKS:
 !  For backwards compatibility, the bulk surface resistance is stored
@@ -1019,6 +1045,7 @@ CONTAINS
 !  09 Nov 2012 - M. Payer        - Replaced all met field arrays with State_Met
 !                                   derived type object
 !  13 Dec 2012 - R. Yantosca     - Removed ref to obsolete CMN_DEP_mod.F
+!  28 Jul 2014 - C. Keller       - Added error trap for DRYCOEFF
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1035,6 +1062,7 @@ CONTAINS
 !
     ! Scalars
     INTEGER          :: I,     J,     K,      KK
+    INTEGER          :: DCSZ
     REAL*8           :: F0,    HSTAR, XMW              
     REAL*8           :: DTMP1, DTMP2, DTMP3,  DTMP4, GFACT, GFACI
     REAL*8           :: RT,    RAD0,  RIX,    RIXX,  RDC,   RLUXX
@@ -1058,6 +1086,9 @@ CONTAINS
     HSTAR = 0.01d0              ! Henry's law constant
     F0    = 0.1d0               ! Reactivity factor for biological oxidation 
     XMW   = 46d-3               ! Molecular wt of NO2 (kg)
+
+    ! Get size of DRYCOEFF (will be passed to routine BIOFIT)
+    DCSZ = SIZE( ExtState%DRYCOEFF )
 
     ! Loop over surface boxes
     DO J = 1, HcoState%NY
@@ -1244,6 +1275,9 @@ CONTAINS
        ENDDO !K
     ENDDO !I
     ENDDO !J
+
+    ! Return w/ success
+    RC = HCO_SUCCESS
 
   END SUBROUTINE Get_Canopy_NOx
 !EOC

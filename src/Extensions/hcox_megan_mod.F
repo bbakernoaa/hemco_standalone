@@ -174,6 +174,7 @@
       REAL(hp), POINTER       :: AEF_CAREN(:,:) => NULL()    ! 3-Carene
       REAL(hp), POINTER       :: AEF_OCIMN(:,:) => NULL()    ! Ocimene
       REAL(hp), POINTER       :: AEF_ACET(:,:) => NULL()     ! Acetone
+      REAL(hp), POINTER       :: GEIA_ORVC(:,:) => NULL()
 
       ! Generic emission factors (all 20 MEGAN groups). Will be determined from 
       ! plant functional types.
@@ -349,9 +350,6 @@
       !--------------------------------------------------------------------
       REAL*8, PARAMETER   :: BIOSCALEC2H4 = 0.022857d0
 
-      ! Pointer to external data
-      REAL(hp), POINTER   :: GEIA_ORVC(:,:) => NULL()
-
       !=================================================================
       ! HCOX_Megan_Run begins here! 
       !================================================================= 
@@ -371,52 +369,54 @@
       !-----------------------------------------------------------------
 
       ! Isoprene and acetone are always calculated
-      CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_ISOP', 
-     &                          AEF_ISOP,   RC )
-      IF ( RC /= HCO_SUCCESS ) RETURN
-
-      CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_ACET', 
-     &                          AEF_ACET,   RC )
-      IF ( RC /= HCO_SUCCESS ) RETURN
-
-      ! Arrays used if monoterpene switch is turned on
-         IF ( LMEGANMONO ) THEN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_MONOT', 
-     &                             AEF_MONOT,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_MBO', 
-     &                             AEF_MBO,   RC )
+      IF ( FIRST ) THEN
+         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_ISOP', 
+     &                             AEF_ISOP,   RC )
          IF ( RC /= HCO_SUCCESS ) RETURN
    
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_APINE', 
-     &                             AEF_APINE,   RC )
+         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_ACET', 
+     &                             AEF_ACET,   RC )
          IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_BPINE', 
-     &                             AEF_BPINE,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_LIMON', 
-     &                             AEF_LIMON,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_SABIN', 
-     &                             AEF_SABIN,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_MYRCN', 
-     &                             AEF_MYRCN,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_CAREN', 
-     &                             AEF_CAREN,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_OCIMN', 
-     &                             AEF_OCIMN,   RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-      ENDIF
-
-      ! Only used for SOA simulation:
-      IF ( LSOA ) THEN
-         CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_ORVC', 
-     &                             GEIA_ORVC, RC )
-         IF ( RC /= HCO_SUCCESS ) RETURN
-      ENDIF
+   
+         ! Arrays used if monoterpene switch is turned on
+            IF ( LMEGANMONO ) THEN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_MONOT', 
+     &                                AEF_MONOT,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_MBO', 
+     &                                AEF_MBO,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+      
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_APINE', 
+     &                                AEF_APINE,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_BPINE', 
+     &                                AEF_BPINE,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_LIMON', 
+     &                                AEF_LIMON,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_SABIN', 
+     &                                AEF_SABIN,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_MYRCN', 
+     &                                AEF_MYRCN,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_CAREN', 
+     &                                AEF_CAREN,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_AEF_OCIMN', 
+     &                                AEF_OCIMN,   RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+         ENDIF
+   
+         ! Only used for SOA simulation:
+         IF ( LSOA ) THEN
+            CALL EmisList_GetDataArr( am_I_Root, 'MEGAN_ORVC', 
+     &                                GEIA_ORVC, RC )
+            IF ( RC /= HCO_SUCCESS ) RETURN
+         ENDIF
+      ENDIF ! FIRST
 
       ! SET AEF_GEN (only on first call). These values are needed for
       ! subroutine GET_EMMONOT_MEGAN, which is only called for OCPI
@@ -424,6 +424,12 @@
      &     IDTOCPI > 0 ) THEN
          CALL GET_AEF_GEN( am_I_Root, HcoState, RC )
          IF ( RC /= HCO_SUCCESS ) RETURN
+      ENDIF
+
+      ! Make sure variable DAYS_BTW_M of ExtState obj. is defined
+      IF ( .NOT. ASSOCIATED(ExtState%DAYS_BTW_M) ) THEN
+         CALL HCO_ERROR ( 'DAYS_BTW_M not defined in ExtState!', RC )
+         RETURN
       ENDIF
 
 !$OMP PARALLEL DO
@@ -1467,20 +1473,6 @@
       ! ALL DONE! 
       !=================================================================
 
-      ! Cleanup
-      GEIA_ORVC => NULL()
-      AEF_ISOP  => NULL()
-      AEF_MONOT => NULL()
-      AEF_MBO   => NULL()
-      AEF_APINE => NULL()
-      AEF_BPINE => NULL()
-      AEF_LIMON => NULL()
-      AEF_SABIN => NULL()
-      AEF_MYRCN => NULL()
-      AEF_CAREN => NULL()
-      AEF_OCIMN => NULL()
-      AEF_ACET  => NULL()
-
       ! Return w/ success
       CALL HCO_LEAVE ( RC )
 
@@ -1548,7 +1540,7 @@
       REAL*8  :: GAMMA_LEAF_AGE, GAMMA_T, GAMMA_LAI_ISOP
       REAL*8  :: D_BTW_M
       REAL*8  :: ISOLAI, PMISOLAI, MISOLAI
-            
+
       !=================================================================
       ! GET_EMISOP_MEGAN begins here!
       !================================================================= 
@@ -3765,6 +3757,20 @@
       !=================================================================
       ! HCOX_MEGAN_FINAL begins here!
       !=================================================================
+
+      ! Nullify pointers
+      GEIA_ORVC => NULL()
+      AEF_ISOP  => NULL()
+      AEF_MONOT => NULL()
+      AEF_MBO   => NULL()
+      AEF_APINE => NULL()
+      AEF_BPINE => NULL()
+      AEF_LIMON => NULL()
+      AEF_SABIN => NULL()
+      AEF_MYRCN => NULL()
+      AEF_CAREN => NULL()
+      AEF_OCIMN => NULL()
+      AEF_ACET  => NULL()
 
       ! Cleanup module arrays
       IF ( ALLOCATED( HCOT_DAY        ) ) DEALLOCATE( HCOT_DAY        )
