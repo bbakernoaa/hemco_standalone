@@ -35,6 +35,9 @@ HELP :=$(ROOT)/help
 SRC  :=$(ROOT)/src
 EXT  :=$(ROOT)/ext
 RUN  :=$(ROOT)/run
+LIB  :=$(ROOT)/lib
+MOD  :=$(ROOT)/mod
+BIN  :=$(ROOT)/bin
 
 ###############################################################################
 ###                                                                         ###
@@ -83,6 +86,9 @@ lib:
 realclean:
 	@$(MAKE) clean
 	@$(MAKE) docclean
+	rm -f $(LIB)/*.a
+	rm -f $(MOD)/*.mod
+	rm -f $(BIN)/*.x
 
 test: check
 
