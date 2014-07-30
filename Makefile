@@ -56,6 +56,7 @@ check:
 clean:  
 	@$(MAKE) -C $(EXT) clean 
 	@$(MAKE) -C $(SRC) clean
+	@$(MAKE) -C $(RUN) clean
 
 debug:
 	@$(MAKE) -C $(EXT) debug
@@ -80,8 +81,7 @@ lib:
 	@$(MAKE) -C $(SRC) lib
 
 realclean:
-	@$(MAKE) -C $(EXT) clean 
-	@$(MAKE) -C $(SRC) clean
+	@$(MAKE) clean
 	@$(MAKE) docclean
 
 test: check
