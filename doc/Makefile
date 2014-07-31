@@ -91,11 +91,11 @@ $(HCO)/hco_state_mod.F90           \
 $(HCO)/hco_tidx_mod.F90	           \
 $(HCO)/hco_unit_mod.F90	           \
 $(HCO)/hcoio_dataread_mod.F90      \
-$(HCO)/hcoio_diagn_mod.F90         \
 $(HCO)/hcoio_messy_mod.F90         \
+$(HCO)/hcoio_diagn_mod.F90         \
+$(EXT)/map_a2a_mod.F90	           \
 $(EXT)/inquireMod.F90	           \
 $(EXT)/julday_mod.F                \
-$(EXT)/regrid_a2a_mod.F90          \
 $(HCOX)/EF_MGN20_mod.F		   \
 $(HCOX)/drydep_toolbox_mod.F90	   \
 $(HCOX)/hcox_custom_mod.F90	   \

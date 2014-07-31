@@ -10,14 +10,11 @@
 ! Note that for now, this code only works for rectilinear (lon-lat)
 ! grids.
 ! TODO: insert vertical regridding capabilities. 
-!\\
-! !REFERENCES: 
 ! \begin{itemize}
 ! \item Joeckel, P. Technical note: Recursive rediscretisation of geo-
 ! scientific data in the Modular Earth Submodel System (MESSy), ACP, 6,
 ! 3557--3562, 2006.
 ! \end{itemize}
-!\\
 ! !INTERFACE: 
 !
 MODULE HCOIO_MESSY_MOD
