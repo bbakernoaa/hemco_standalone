@@ -90,8 +90,9 @@ $(HCO)/hco_readlist_mod.F90        \
 $(HCO)/hco_state_mod.F90           \
 $(HCO)/hco_tidx_mod.F90	           \
 $(HCO)/hco_unit_mod.F90	           \
-$(HCO)/hcoi_dataread_mod.F90       \
-$(HCO)/hcoi_messy_mod.F90          \
+$(HCO)/hcoio_dataread_mod.F90      \
+$(HCO)/hcoio_diagn_mod.F90         \
+$(HCO)/hcoio_messy_mod.F90         \
 $(EXT)/inquireMod.F90	           \
 $(EXT)/julday_mod.F                \
 $(EXT)/regrid_a2a_mod.F90          \
@@ -114,7 +115,6 @@ $(HCOX)/hcox_state_mod.F90	   \
 $(HCOX)/henry_mod.F		   \
 $(HCOX)/ocean_toolbox_mod.F90      \
 $(HCOX)/paranox_util_mod.F         \
-$(HCOI)/hcoi_gc_diagn_mod.F90      \
 $(HCOI)/hco_standalone_mod.F90     \
 $(RUN)/hemco_standalone.F90
 
