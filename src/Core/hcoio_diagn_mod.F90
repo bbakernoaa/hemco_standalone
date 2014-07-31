@@ -61,7 +61,6 @@ CONTAINS
 ! is different from the previous (emissions) month, all diagnostics with 
 ! hourly, daily and monthly time averaging intervals are written out.
 !\\
-!\\
 ! !INTERFACE:
 !
   SUBROUTINE HCOIO_Diagn_WriteOut( am_I_Root, HcoState, WriteAll, &
@@ -69,7 +68,6 @@ CONTAINS
 !
 ! !USES:
 !
-
     USE Ncdf_Mod,      ONLY : NC_Create
     USE Ncdf_Mod,      ONLY : NC_Close
     USE Ncdf_Mod,      ONLY : NC_Var_Def
@@ -85,11 +83,10 @@ CONTAINS
     TYPE(HCO_State),  POINTER       :: HcoState    ! HEMCO state object 
     LOGICAL,          INTENT(IN   ) :: WriteAll    ! Write all diagnostics? 
     CHARACTER(LEN=*), OPTIONAL      :: PREFIX      ! File prefix
-    LOGICAL,          OPTIONAL      :: UsePrevTime ! Use previous time 
-!                                                  !  in filename?
+    LOGICAL,          OPTIONAL      :: UsePrevTime ! Use prev. time in file? 
+!
 ! !INPUT/OUTPUT PARAMETERS:
 !
-
     INTEGER,          INTENT(INOUT) :: RC          ! Failure or success
 !
 ! !REVISION HISTORY: 
@@ -315,4 +312,3 @@ CONTAINS
 !EOC
 END MODULE HCOIO_Diagn_Mod
 #endif
-
