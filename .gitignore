@@ -1,0 +1,3 @@
+# ignore dummy install files
+/*.install
+/*.clone

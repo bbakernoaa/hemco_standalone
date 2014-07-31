@@ -1,0 +1,3 @@
+# ignore reference files. Those are automatically build during compilation!
+HEMCO_Reference.pdf
+HEMCO_Reference.tex
