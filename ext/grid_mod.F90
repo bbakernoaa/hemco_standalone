@@ -523,6 +523,8 @@ CONTAINS
        WRITE( 6, '(8(f8.3,1x))' ) ( YDG(1,J,1), J=1,J2+1-J1+1 )
     ENDIF
 
+    ! Return w/ success
+
   END SUBROUTINE DoGridComputation 
 !EOC
 END MODULE GRID_MOD
