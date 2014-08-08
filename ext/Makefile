@@ -97,6 +97,8 @@ charpak_mod.o          : charpak_mod.F
 
 grid_mod.o             : grid_mod.F90
 
+henry_mod.o            : henry_mod.F
+
 inquireMod.o           : inquireMod.F90
 
 julday_mod.o           : julday_mod.F
