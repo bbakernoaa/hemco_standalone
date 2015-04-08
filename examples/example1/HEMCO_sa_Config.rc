@@ -32,7 +32,7 @@
 #BOC
 
 ###############################################################################
-###  BEGIN SECTION SETTINGS
+BEGIN SECTION SETTINGS
 ###############################################################################
 #
 GridFile                    : HEMCO_sa_Grid.rc
@@ -40,17 +40,27 @@ SpecFile                    : HEMCO_sa_Spec.rc
 TimeFile                    : HEMCO_sa_Time.rc
 Logfile                     : output/HEMCO_sa.log
 DiagnPrefix                 : output/HEMCO_sa.diagnostics
-Wildcard                    : *
-Separator                   : /
+DiagnFreq                   : Hourly
 Unit tolerance              : 2
-Verbose                     : false
-Track code                  : false
-Show warnings               : true
+Negative values             : 0
+Verbose                     : 0
+Warnings                    : 1
 #
 END SECTION SETTINGS 
 
 ###############################################################################
-### BEGIN SECTION BASE EMISSIONS 
+BEGIN SECTION EXTENSION SWITCHES
+###############################################################################
+#
+# ExtNr ExtName           on/off  Species 
+0       Base              : on    *             
+# ---------------------------------------------------
+
+#
+END SECTION EXTENSION SWITCHES 
+
+###############################################################################
+BEGIN SECTION BASE EMISSIONS 
 ###############################################################################
 
 # ExtNr	Name sourceFile	sourceVar sourceTime C/R/E SrcDim SrcUnit Species ScalIDs Cat Hier
@@ -61,7 +71,7 @@ END SECTION SETTINGS
 END SECTION BASE EMISSIONS 
 
 ###############################################################################
-###  BEGIN SECTION SCALE FACTORS 
+BEGIN SECTION SCALE FACTORS 
 ###############################################################################
 
 # ScalID Name sourceFile sourceVar sourceTime C/R/E SrcDim SrcUnit Oper
@@ -69,35 +79,11 @@ END SECTION BASE EMISSIONS
 END SECTION SCALE FACTORS 
 
 ###############################################################################
-###  BEGIN SECTION MASKS 
+BEGIN SECTION MASKS 
 ###############################################################################
 #
 # ScalID Name sourceFile sourceVar sourceTime C/R/E SrcDim SrcUnit Oper Lon1/Lat1/Lon2/Lat2
 #
 END SECTION MASKS 
-
-###############################################################################
-###  BEGIN SECTION EXTENSION SWITCHES
-###############################################################################
-# Make sure that the ExtNr provided here matches with the ExtNr provided in the base 
-# emissions sections. Otherwise, the listed files won't be read!
-#
-# ExtNr ExtName           on/off  Species 
-107     SeaSalt           : off   SALA/SALC/Br2
-    --> SALA lower radius :       0.01 
-    --> SALA upper radius :       0.5
-    --> SALC lower radius :       0.5
-    --> SALC upper radius :       8.0
-    --> Emit Br2          :       true  
-    --> Br2 scaling       :       1.0 
-#
-END SECTION EXTENSION SWITCHES 
-
-###############################################################################
-###  BEGIN SECTION EXTENSION DATA
-###############################################################################
-#
-END SECTION EXTENSION DATA
  
 ### END OF HEMCO INPUT FILE ###
-#
