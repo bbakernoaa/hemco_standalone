@@ -95,14 +95,20 @@ debug:
 
 charpak_mod.o          : charpak_mod.F
 
-grid_mod.o             : grid_mod.F90
+grid_mod.o             : grid_mod.F90 \
+                         precision_mod.o
 
-henry_mod.o            : henry_mod.F
+henry_mod.o            : henry_mod.F \
+                         precision_mod.o
 
 inquireMod.o           : inquireMod.F90
 
-julday_mod.o           : julday_mod.F
+julday_mod.o           : julday_mod.F \
+                         precision_mod.o
 
-regrid_a2a_mod.o       : regrid_a2a_mod.F90
+precision_mod.o        : precision_mod.F
+
+regrid_a2a_mod.o       : regrid_a2a_mod.F90 \
+                         precision_mod.o
 
 #EOC
