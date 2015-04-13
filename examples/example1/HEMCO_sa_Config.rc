@@ -38,9 +38,10 @@ BEGIN SECTION SETTINGS
 GridFile                    : HEMCO_sa_Grid.rc
 SpecFile                    : HEMCO_sa_Spec.rc
 TimeFile                    : HEMCO_sa_Time.rc
-Logfile                     : output/HEMCO_sa.log
+DiagnFile                   : HEMCO_sa_Diagn.rc
 DiagnPrefix                 : output/HEMCO_sa.diagnostics
 DiagnFreq                   : Hourly
+Logfile                     : output/HEMCO_sa.log
 Unit tolerance              : 2
 Negative values             : 0
 Verbose                     : 0
