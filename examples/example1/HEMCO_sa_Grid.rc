@@ -1,11 +1,8 @@
 # Emission grid specifications:
-# NX = number of cells in x direction (longitude)
-# NY = number of cells in y direction (latitude)
-# NZ = number of levels
-# DX = delta longitude (one value or vector of length NX)
-# DY = delta latitude  (one value or vector of length NY)
+XMIN: -180.0
+XMAX: -180.0
+YMIN: -90.0 
+YMAX:  90.0 
 NX: 72
 NY: 46
 NZ: 47
-DX: 5.0
-DY: 2.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 2.0
