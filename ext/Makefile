@@ -95,9 +95,6 @@ debug:
 
 charpak_mod.o          : charpak_mod.F
 
-grid_mod.o             : grid_mod.F90 \
-                         precision_mod.o
-
 henry_mod.o            : henry_mod.F \
                          precision_mod.o
 
