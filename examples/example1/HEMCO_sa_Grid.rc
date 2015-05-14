@@ -3,8 +3,6 @@ XMIN: -180.0
 XMAX:  180.0
 YMIN: -90.0 
 YMAX:  90.0 
-#NX: 72
-#NY: 45
 NX: 360
 NY: 180
 NZ: 47

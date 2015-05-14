@@ -35,6 +35,7 @@
 BEGIN SECTION SETTINGS
 ###############################################################################
 #
+ROOT                        : ./data
 GridFile                    : HEMCO_sa_Grid.rc
 SpecFile                    : HEMCO_sa_Spec.rc
 TimeFile                    : HEMCO_sa_Time.rc
@@ -67,7 +68,7 @@ BEGIN SECTION BASE EMISSIONS
 # ExtNr	Name sourceFile	sourceVar sourceTime C/R/E SrcDim SrcUnit Species ScalIDs Cat Hier
 
 # --- MACCity ---
-0 EDGAR_CO data/v42_CO_2008_TOT.0.1x0.1.nc emi_co 2008/1/1/0 C xy kg/m2/s CO - 1 1
+0 EDGAR_CO $ROOT/v42_CO_2008_TOT.0.1x0.1.nc emi_co 2008/1/1/0 C xy kg/m2/s CO - 1 1
 #
 END SECTION BASE EMISSIONS 
 
