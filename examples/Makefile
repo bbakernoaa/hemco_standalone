@@ -63,7 +63,6 @@ check:
 clean:
 	rm -f *.o *.mod *.a *.x *.nc *.log 
 	rm -f $(XPL)/*.x
-	rm -f $(XPL)/*.rc
 	rm -f $(XPL)/*.nc
 	rm -f $(XPL)/output/*
 
