@@ -1,6 +1,3 @@
-# Number of species
-NSPECS: 1
-
 # List species below. For each species, the following entries must be given:
 # ID        : species ID
 # NAME      : species name
