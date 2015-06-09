@@ -69,7 +69,7 @@ clean:
 
 run:
 	cp -f $(RUN)/*.x ${XPL}/
-	cd ${XPL}; ./$(EXE) "HEMCO_sa_Config"
+	cd ${XPL}; ./$(EXE) "HEMCO_sa_Config.rc"
 
 debug:
 	@echo "Targets : $(MAKECMDGOALS)"

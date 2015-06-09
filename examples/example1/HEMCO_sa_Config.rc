@@ -36,10 +36,10 @@ BEGIN SECTION SETTINGS
 ###############################################################################
 #
 ROOT                        : ./data 
-GridFile                    : HEMCO_sa_Grid
-SpecFile                    : HEMCO_sa_Spec
-TimeFile                    : HEMCO_sa_Time
-DiagnFile                   : HEMCO_sa_Diagn
+GridFile                    : HEMCO_sa_Grid.rc
+SpecFile                    : HEMCO_sa_Spec.rc
+TimeFile                    : HEMCO_sa_Time.rc
+DiagnFile                   : HEMCO_sa_Diagn.rc
 DiagnPrefix                 : output/HEMCO_sa.diagnostics
 DiagnFreq                   : Hourly
 Logfile                     : output/HEMCO_sa.log
