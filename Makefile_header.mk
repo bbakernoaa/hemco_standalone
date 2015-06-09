@@ -164,7 +164,7 @@ endif
 NC_LINK        :=-L$(LIB_NETCDF) -L$(LIB_HDF5) $(NC_LINK)
 
 # Command to link to all library files
-LINK           :=-L$(LIB) -lHCOI -lHCOX -lHCO -lEXT -L$(NCU_LIB) -lNcUtils $(NC_LINK)
+LINK_HCO       :=-L$(LIB) -lHCOI -lHCOX -lHCO -lEXT -L$(NCU_LIB) -lNcUtils $(NC_LINK)
 
 ###############################################################################
 ###                                                                         ###
@@ -354,7 +354,7 @@ export CC
 export F90
 export FREEFORM
 export LD
-export LINK
+export LINK_HCO
 export R8
 export SHELL
 #EOC
@@ -374,5 +374,5 @@ export SHELL
 #	@@echo "f90     : $(F90)"
 #	@@echo "cc      : $(CC)"
 #	@@echo "include : $(INCLUDE)"
-#	@@echo "link    : $(LINK)"
+#	@@echo "link    : $(LINK_HCO)"
 #	@@echo "userdefs: $(USER_DEFS)"
