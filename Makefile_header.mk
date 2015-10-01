@@ -249,6 +249,9 @@ endif
 # Append the user options in USER_DEFS to FFLAGS
 FFLAGS         += $(USER_DEFS)
 
+# Add any additional flags
+FFLAGS         += $(EXTRA_FLAGS)
+
 # Include options (i.e. for finding *.h, *.mod files)
 INCLUDE        := -module $(MOD) $(NC_INC)
 
