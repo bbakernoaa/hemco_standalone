@@ -104,8 +104,13 @@ endif
 # %%%%% Test if IFORT compiler is selected %%%%%
 REGEXP         :=(^[Ii][Ff][Oo][Rr][Tt])
 ifeq ($(shell [[ "$(COMPILER)" =~ $(REGEXP) ]] && echo true),true)
-COMPLER        :=ifort
+COMPILER       :=ifort
+REGEXP         :=(^[Yy][Ee][Ss])
+ifeq ($(shell [[ "$(MPI)" =~ $(REGEXP) ]] && echo true),true)
+COMPILE_CMD    :=mpiifort
+else
 COMPILE_CMD    :=ifort
+endif
 USER_DEFS      += -DLINUX_IFORT
 endif
 
